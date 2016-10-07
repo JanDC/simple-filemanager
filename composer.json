@@ -3,12 +3,12 @@
   "description": "",
   "license": "ISC",
   "require": {
-    "symfony/filesystem": "^3.1",
-    "symfony/http-foundation": "^3.1"
+    "symfony/filesystem": "<2.7",
+    "symfony/http-foundation": "<2.7"
   },
   "require-dev": {
-    "silex/silex": "^2.0",
-    "twig/twig": "^1.26"
+    "silex/silex": "1.2.*",
+    "twig/twig": "~1.26"
   },
   "authors": [
     {

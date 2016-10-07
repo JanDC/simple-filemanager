@@ -2,12 +2,11 @@
 
 namespace SimpleFilemanager\Implementation\Silex;
 
-use Pimple\Container;
-use Pimple\ServiceProviderInterface;
-use Silex\Api\ControllerProviderInterface;
 use Silex\Application;
 use Silex\ControllerCollection;
+use Silex\ControllerProviderInterface;
 use Silex\ServiceControllerResolver;
+use Silex\ServiceProviderInterface;
 use SimpleFilemanager\Implementation\Silex\Controllers\Filemanager;
 
 class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerProviderInterface
@@ -19,13 +18,13 @@ class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerP
      * This method should only be used to configure services and parameters.
      * It should not get services.
      *
-     * @param Container $pimple A container instance
+     * @param Application $app container instance
      */
-    public function register(Container $pimple)
+    public function register(Application $app)
     {
-        $app['simple-filemanager.controller'] = function ($app) {
+        $app['simple-filemanager.controller'] = $app->share(function($app) {
             return new Filemanager();
-        };
+        });
 
         if (isset($app['twig'])) {
             $app['twig']->getLoader()->addLoader(new \Twig_Loader_Filesystem([__DIR__ . '/Resources/views']));
@@ -48,8 +47,19 @@ class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerP
 
         /** @var ControllerCollection $controllers */
         $controllers = $app['controllers_factory'];
-
         $controllers->get('/', 'simple-filemanager.controller:listAction')->bind('simple-filemanager.overview');
         return $controllers;
+    }
+
+    /**
+     * Bootstraps the application.
+     *
+     * This method is called after all services are registered
+     * and should be used for "dynamic" configuration (whenever
+     * a service must be requested).
+     */
+    public function boot(Application $app)
+    {
+        // TODO: Implement boot() method.
     }
 }

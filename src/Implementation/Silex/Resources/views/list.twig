@@ -1,5 +1,40 @@
 {% extends '@simple-filemanager/base.twig' %}
 
 {% block content %}
-    TEST LIST
+    <h1>Listing for "{{ directory }}"</h1>
+
+    <table>
+        {% for entry in listing.directories %}
+            <tr>
+                <td>
+                    <a class="icon-directory"
+                       href="{{ url('simple-filemanager.overview',{directory: directory~'/'~entry.relativePathname}) }}">
+                        {{ entry.relativePathname }}
+                    </a>
+                    {% include '@simple-filemanager/_includes/operations.twig' with {context: 'directory'} %}
+                </td>
+            </tr>
+        {% endfor %}
+
+        {% for entry in listing.files %}
+            <tr>
+                <a class="icon-file"
+                   href="{{ url('simple-filemanager.open',{path : directory~'/'~entry.relativePathname}) }}">
+                    {{ entry.relativePathname }}
+                </a>
+                {% include '@simple-filemanager/_includes/operations.twig' with {context: 'files'} %}
+            </tr>
+        {% endfor %}
+    </table>
+
+    <form class="file-upload" enctype="multipart/form-data" method="post"
+          action="{{ url('simple-filemanager.upload',{directory: directory}) }}">
+        <input type="file" multiple name="upload-field[]"/>
+        <button type="submit">Load me up!</button>
+    </form>
+    
 {% endblock content %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock javascripts %}

@@ -1,0 +1,25 @@
+<ul>
+    <li>
+        <form method="post"
+              action="{{ url('simple-filemanager.operation',{type:'rename',path : directory~'/'~entry.relativePathname} ) }}">
+            <input type="text" placeholder="{{entry.relativePathname}}" name="newname-field"/>
+            <button type="submit">Rename</button>
+        </form>
+    </li>
+    <li>
+        <form method="post"
+              action="{{ url('simple-filemanager.operation',{type:'duplicate',path : directory~'/'~entry.relativePathname}) }}">
+            <input type="text" placeholder="{{ entry.relativePathname }}" name="newname-field"/>
+            <button type="submit">Duplicate</button>
+        </form>
+    </li>
+    <li>
+        <form method="post"
+              action="{{ url('simple-filemanager.operation',{type:'delete',path : directory~'/'~entry.relativePathname}) }}">
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+</ul>
+
+<script>
+</script>

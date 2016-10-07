@@ -8,6 +8,7 @@ use Silex\ControllerProviderInterface;
 use Silex\ServiceControllerResolver;
 use Silex\ServiceProviderInterface;
 use SimpleFilemanager\Implementation\Silex\Controllers\Filemanager;
+use SimpleFilemanager\Lib\SimpleFilemanager;
 
 class SimpleFilemanagerProvider implements ControllerProviderInterface
 {
@@ -26,6 +27,10 @@ class SimpleFilemanagerProvider implements ControllerProviderInterface
             return new Filemanager();
         });
 
+        $app['simple-filemanager.service'] = $app->share(function ($app) {
+            return new SimpleFilemanager($app['sfm-options.root_dir']);
+        });
+
         if (isset($app['twig'])) {
             $loader = new \Twig_Loader_Filesystem();
             $loader->addPath(__DIR__ . '/Resources/views', 'simple-filemanager');
@@ -34,7 +39,25 @@ class SimpleFilemanagerProvider implements ControllerProviderInterface
 
         /** @var ControllerCollection $controllers */
         $controllers = $app['controllers_factory'];
-        $controllers->get('/', 'simple-filemanager.controller:listAction')->bind('simple-filemanager.overview');
+        $controllers->get('/upload/{directory}', 'simple-filemanager.controller:uploadAction')
+            ->value('directory', null)
+            ->assert('directory', '.*')
+            ->method('POST')->bind('simple-filemanager.upload');
+        $controllers->get('/open/{path}', 'simple-filemanager.controller:openAction')
+            ->bind('simple-filemanager.open')
+            ->assert('path', '.*');
+        $controllers->get('/operation/{type}/{path}', 'simple-filemanager.controller:operationAction')
+            ->value('path', null)
+            ->assert('path', '.*')
+            ->method('POST')
+            ->bind('simple-filemanager.operation');
+         $controllers->get('/{directory}', 'simple-filemanager.controller:listAction')
+            ->value('directory', null)
+            ->assert('directory', '.*')
+            ->bind('simple-filemanager.overview');
+
+
+
         return $controllers;
     }
 

@@ -11,9 +11,8 @@ interface FilemanagerInterface
 
     /**
      * @param $path
-     * @param bool $soft
      */
-    public function remove($path, $soft = false);
+    public function remove($path);
 
     /**
      * @param $path

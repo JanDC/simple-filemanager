@@ -11,6 +11,14 @@ use SimpleFilemanager\Implementation\Silex\Controllers\Filemanager;
 
 class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerProviderInterface
 {
+    /** @var  string */
+    private $mountPoint;
+
+    public function __construct($mountPoint)
+    {
+        $this->mountPoint = $mountPoint;
+    }
+
 
     /**
      * Registers services on the given container.
@@ -22,7 +30,7 @@ class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerP
      */
     public function register(Application $app)
     {
-        $app['simple-filemanager.controller'] = $app->share(function($app) {
+        $app['simple-filemanager.controller'] = $app->share(function ($app) {
             return new Filemanager();
         });
 
@@ -47,7 +55,7 @@ class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerP
 
         /** @var ControllerCollection $controllers */
         $controllers = $app['controllers_factory'];
-        $controllers->get('/', 'simple-filemanager.controller:listAction')->bind('simple-filemanager.overview');
+        $controllers->get($this->mountPoint . '/', 'simple-filemanager.controller:listAction')->bind('simple-filemanager.overview');
         return $controllers;
     }
 

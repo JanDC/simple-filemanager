@@ -15,5 +15,10 @@
       "name": "Jan Decavele",
       "email": "jandecavele@gmail.com"
     }
-  ]
+  ],
+  "autoload": {
+    "psr-4": {
+      "SimpleFileManager\\": "src/SimpleFilemanager"
+    }
+  }
 }

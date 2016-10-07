@@ -9,35 +9,9 @@ use Silex\ServiceControllerResolver;
 use Silex\ServiceProviderInterface;
 use SimpleFilemanager\Implementation\Silex\Controllers\Filemanager;
 
-class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerProviderInterface
+class SimpleFilemanagerProvider implements ControllerProviderInterface
 {
-    /** @var  string */
-    private $mountPoint;
 
-    public function __construct($mountPoint)
-    {
-        $this->mountPoint = $mountPoint;
-    }
-
-
-    /**
-     * Registers services on the given container.
-     *
-     * This method should only be used to configure services and parameters.
-     * It should not get services.
-     *
-     * @param Application $app container instance
-     */
-    public function register(Application $app)
-    {
-        $app['simple-filemanager.controller'] = $app->share(function ($app) {
-            return new Filemanager();
-        });
-
-        if (isset($app['twig'])) {
-            $app['twig']->getLoader()->addLoader(new \Twig_Loader_Filesystem([__DIR__ . '/Resources/views']));
-        }
-    }
 
     /**
      * Returns routes to connect to the given application.
@@ -48,14 +22,19 @@ class SimpleFilemanagerProvider implements ServiceProviderInterface, ControllerP
      */
     public function connect(Application $app)
     {
-        if (!$app['resolver'] instanceof ServiceControllerResolver) {
-            // using RuntimeException crashes PHP?!
-            throw new \LogicException('You must enable the ServiceController service provider to be able to use these routes.');
+        $app['simple-filemanager.controller'] = $app->share(function ($app) {
+            return new Filemanager();
+        });
+
+        if (isset($app['twig'])) {
+            $loader = new \Twig_Loader_Filesystem();
+            $loader->addPath(__DIR__ . '/Resources/views', 'simple-filemanager');
+            $app['twig']->getLoader()->addLoader($loader);
         }
 
         /** @var ControllerCollection $controllers */
         $controllers = $app['controllers_factory'];
-        $controllers->get($this->mountPoint . '/', 'simple-filemanager.controller:listAction')->bind('simple-filemanager.overview');
+        $controllers->get('/', 'simple-filemanager.controller:listAction')->bind('simple-filemanager.overview');
         return $controllers;
     }
 

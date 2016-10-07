@@ -1,0 +1,19 @@
+{
+  "name": "jandc/simple-filemanager",
+  "description": "",
+  "license": "ISC",
+  "require": {
+    "symfony/filesystem": "^3.1",
+    "symfony/http-foundation": "^3.1"
+  },
+  "require-dev": {
+    "silex/silex": "^2.0",
+    "twig/twig": "^1.26"
+  },
+  "authors": [
+    {
+      "name": "Jan Decavele",
+      "email": "jandecavele@gmail.com"
+    }
+  ]
+}

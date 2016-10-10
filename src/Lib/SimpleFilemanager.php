@@ -1,13 +1,11 @@
 <?php
 
-
 namespace SimpleFilemanager\Lib;
 
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class SimpleFilemanager extends Filesystem implements FilemanagerInterface
@@ -48,13 +46,13 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
         ];
     }
 
-    public function open($path)
+    public function open($path, $allowDirectories = false)
     {
         if (!$this->exists($path)) {
             throw new FileNotFoundException("'{$path}' does not exist.");
         }
 
-        if (!$this->isFile($path)) {
+        if (!($this->isFile($path) || $allowDirectories)) {
             throw new FileNotFoundException("'{$path}' is not a file.");
         }
 
@@ -91,5 +89,11 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
     {
         $directory = $this->rootDirectory . DIRECTORY_SEPARATOR . $directory;
         $this->copy($file->getRealPath(), $directory . DIRECTORY_SEPARATOR . $file->getClientOriginalName());
+    }
+
+    public function getParentDirectory($path)
+    {
+        $directory = $this->open($this->buildFullPath($path), true)->getPath();
+        return str_replace($this->rootDirectory, '', $directory);
     }
 }

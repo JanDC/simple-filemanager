@@ -46,7 +46,13 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
         ];
     }
 
-    public function open($path, $allowDirectories = false)
+    /**
+     * @param string $path
+     * @param bool $allowDirectories
+     *
+     * @return SplFileInfo
+     */
+    public function open(string $path, $allowDirectories = false)
     {
         if (!$this->exists($path)) {
             throw new FileNotFoundException("'{$path}' does not exist.");
@@ -70,7 +76,12 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
         $this->dumpFile($path, $content);
     }
 
-    public function isFile($path)
+    /**
+     * @param string $path
+     *
+     * @return bool
+     */
+    public function isFile(string $path)
     {
         return !(is_link($path) || is_dir($path)) && is_file($path);
     }
@@ -80,20 +91,50 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
         return mime_content_type($file->getPath());
     }
 
-    public function buildFullPath($path)
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
+    public function buildFullPath(string $path)
     {
         return "{$this->rootDirectory}/{$path}";
     }
 
-    public function copyToDirectory(UploadedFile $file, $directory = null)
+    /**
+     * @param UploadedFile $file
+     *
+     * @param string|null $directory
+     */
+    public function copyToDirectory(UploadedFile $file, string $directory = null)
     {
         $directory = $this->rootDirectory . DIRECTORY_SEPARATOR . $directory;
         $this->copy($file->getRealPath(), $directory . DIRECTORY_SEPARATOR . $file->getClientOriginalName());
     }
 
-    public function getParentDirectory($path)
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
+    public function getParentDirectory(string $path)
     {
-        $directory = $this->open($this->buildFullPath($path), true)->getPath();
-        return str_replace($this->rootDirectory, '', $directory);
+        try {
+            $directory = $this->open($this->exists($path) ? $path : $this->buildFullPath($path), true)->getPath();
+        } catch (FileNotFoundException $fnfe) {
+            $directory = substr($this->buildFullPath($path), 0, strrpos($this->buildFullPath($path), DIRECTORY_SEPARATOR, -1));
+        }
+
+        return $this->getPathRelativeToRoot($directory);
+    }
+
+    /**
+     * @param $path
+     *
+     * @return string
+     */
+    public function getPathRelativeToRoot($path)
+    {
+        return str_replace($this->rootDirectory, '', $path);
     }
 }

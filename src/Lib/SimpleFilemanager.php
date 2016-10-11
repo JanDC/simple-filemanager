@@ -108,8 +108,11 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      */
     public function copyToDirectory(UploadedFile $file, string $directory = null)
     {
-        $directory = $this->rootDirectory . DIRECTORY_SEPARATOR . $directory;
-        $this->copy($file->getRealPath(), $directory . DIRECTORY_SEPARATOR . $file->getClientOriginalName());
+        $directory = $this->buildFullPath($directory);
+        if (!$this->exists($directory)) {
+            $this->mkdir($directory);
+        }
+        $this->copy($file->getRealPath(), $this->buildFullPath($file->getClientOriginalName()));
     }
 
     /**

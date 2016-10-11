@@ -112,7 +112,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
         if (!$this->exists($directory)) {
             $this->mkdir($directory);
         }
-        $this->copy($file->getRealPath(), $this->buildFullPath($file->getClientOriginalName()));
+        $this->copy($file->getRealPath(), $directory . DIRECTORY_SEPARATOR . $file->getClientOriginalName());
     }
 
     /**

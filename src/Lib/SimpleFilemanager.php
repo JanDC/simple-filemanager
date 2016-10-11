@@ -98,7 +98,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      */
     public function buildFullPath(string $path)
     {
-        return "{$this->rootDirectory}/{$path}";
+        return $this->rootDirectory . DIRECTORY_SEPARATOR . $path;
     }
 
     /**

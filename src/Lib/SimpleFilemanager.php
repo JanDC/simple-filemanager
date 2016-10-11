@@ -33,6 +33,20 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
 
     }
 
+    public function createDirectoryPath($path)
+    {
+        $relativePath = $this->getPathRelativeToRoot($path);
+
+        $tokens = array_filter(explode(DIRECTORY_SEPARATOR, $relativePath));
+
+        $paths = [['path' => '', 'name' => '/']];
+        foreach ($tokens as $key => $token) {
+            $paths[] = ['path' => $paths[$key]['path'] . $token . DIRECTORY_SEPARATOR, 'name' => $token];
+        }
+
+        return $paths;
+    }
+
     /**
      * @param $directoryPath
      *
@@ -138,6 +152,6 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      */
     public function getPathRelativeToRoot($path)
     {
-        return str_replace($this->rootDirectory, '', $path);
+        return ltrim(str_replace($this->rootDirectory, '', $path), DIRECTORY_SEPARATOR);
     }
 }

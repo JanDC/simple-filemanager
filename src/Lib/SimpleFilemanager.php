@@ -110,7 +110,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return string
      */
-    public function buildFullPath(string $path)
+    public function buildFullPath($path)
     {
         return $this->rootDirectory . DIRECTORY_SEPARATOR . $path;
     }
@@ -120,7 +120,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @param string|null $directory
      */
-    public function copyToDirectory(UploadedFile $file, string $directory = null)
+    public function copyToDirectory(UploadedFile $file, $directory = null)
     {
         $directory = $this->buildFullPath($directory);
         if (!$this->exists($directory)) {
@@ -134,7 +134,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return string
      */
-    public function getParentDirectory(string $path)
+    public function getParentDirectory($path)
     {
         try {
             $directory = $this->open($this->exists($path) ? $path : $this->buildFullPath($path), true)->getPath();

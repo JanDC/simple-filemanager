@@ -4,9 +4,9 @@
   "license": "ISC",
   "require": {
     "php": "~7.0",
-    "symfony/filesystem": "2.7",
-    "symfony/finder": "2.7",
-    "symfony/http-foundation": "2.7"
+    "symfony/filesystem": "~2.7",
+    "symfony/finder": "~2.7",
+    "symfony/http-foundation": "~2.7"
   },
   "require-dev": {
     "silex/silex": "1.2.*",

@@ -2,15 +2,21 @@
 
 namespace SimpleFilemanager\Implementation\Silex\Controllers;
 
+use Psr\Log\InvalidArgumentException;
 use Silex\Application;
 use SimpleFilemanager\Lib\SimpleFilemanager;
+use Symfony\Component\Finder\Exception\OperationNotPermitedException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 class Filemanager
 {
+
+    /** @var SimpleFilemanager */
+    private $sfm;
 
     /**
      * @param Application $app
@@ -71,39 +77,74 @@ class Filemanager
      */
     public function operationAction(Application $app, $type, $path)
     {
-        /**@var Request $request */
+        /** @var Request $request */
         $request = $app['request'];
 
-        /** @var SimpleFilemanager $sfm */
-        $sfm = $app['simple-filemanager.service'];
-        $fullPath = $sfm->buildFullPath($path);
+        $this->sfm = $app['simple-filemanager.service'];
+        $fullPath = $this->sfm->buildFullPath($path);
 
-        if (!$sfm->isFile($fullPath)){
-            $this->handeDirectoryOperation($type,$path,$request->get('newname-field',false));
-            return new RedirectResponse($app['url_generator']->generate('simple-filemanager.overview', ['directory' => $fullPath]));
+        $newName = Slugify::create()->slugify($request->get('newname-field', false));
 
+        if (!$this->sfm->isFile($fullPath)) {
+            $returnDirectory = $this->handleDirectoryOperation($type, $fullPath, $newName);
+
+            return new RedirectResponse($app['url_generator']->generate('files',
+                ['directory' => ltrim($returnDirectory, DIRECTORY_SEPARATOR)]
+            ));
         }
 
-        $file = $sfm->open($fullPath);
-
+        $file = $this->sfm->open($fullPath);
 
         switch ($type) {
             case 'rename':
-                $sfm->rename($file->getRealPath(), $file->getPath() . DIRECTORY_SEPARATOR . $request->get('newname-field'));
+                $this->sfm->rename($file->getRealPath(), $file->getPath() . DIRECTORY_SEPARATOR . $request->get('newname-field'));
                 break;
             case 'duplicate':
-                $sfm->copy($file->getRealPath(), $file->getPath() . DIRECTORY_SEPARATOR . $request->get('newname-field'));
+                $this->sfm->copy($file->getRealPath(), $file->getPath() . DIRECTORY_SEPARATOR . $request->get('newname-field'));
                 break;
             case 'delete':
-                $sfm->remove($file->getPath());
+                $this->sfm->remove($file->getRealPath());
                 break;
         }
+
+        /** @var FlashBagInterface $flashBag */
+        $flashBag = $request->getSession()->getFlashBag();
+
+        $flashBag->add('message',
+            sprintf($app['translator']->translate("fileoperation.$type"), $file->getFilename(), $request->get('newname-field'))
+        );
 
         return new RedirectResponse($app['url_generator']->generate('simple-filemanager.overview', ['directory' => $file->getRelativePath()]));
     }
 
-    private function handeDirectoryOperation($type, $path, $get)
+
+    /**
+     * @param $type
+     * @param $path
+     * @param $newName
+     *
+     * @return string
+     */
+    private function handleDirectoryOperation($type, $path, $newName)
     {
-        // Not yet supported!!
-    }
+        switch ($type) {
+            case 'rename':
+                $this->sfm->rename($path, $this->sfm->getParentDirectory($path) . DIRECTORY_SEPARATOR . $newName);
+
+                return $this->sfm->getParentDirectory($path);
+                break;
+            case 'create-dir':
+                $this->sfm->mkdir($path . DIRECTORY_SEPARATOR . $newName);
+
+                return $this->sfm->getPathRelativeToRoot($path);
+                break;
+            case 'delete':
+                $this->sfm->remove($path);
+
+                return $this->sfm->getParentDirectory($path);
+                break;
+        }
+
+        throw new InvalidArgumentException("The \"{$type}\" operation is not implemented.");
+}
 }

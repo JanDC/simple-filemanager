@@ -5,6 +5,7 @@ namespace SimpleFilemanager\Lib;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\Iterator\SortableIterator;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -27,8 +28,8 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
     public function listRoot()
     {
         return [
-            'directories' => Finder::create()->in($this->rootDirectory)->ignoreDotFiles(false)->depth(0)->directories()->getIterator(),
-            'files' => Finder::create()->in($this->rootDirectory)->ignoreDotFiles(false)->depth(0)->files()->getIterator(),
+            'directories' => Finder::create()->in($this->rootDirectory)->ignoreDotFiles(false)->depth(0)->directories()->sortByName()->getIterator(),
+            'files' => Finder::create()->in($this->rootDirectory)->ignoreDotFiles(false)->depth(0)->files()->sortByName()->getIterator(),
         ];
 
     }
@@ -55,8 +56,8 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
     public function listDirectoryEntries($directoryPath)
     {
         return [
-            'directories' => Finder::create()->in("{$this->rootDirectory}/{$directoryPath}")->ignoreDotFiles(false)->depth(0)->directories()->getIterator(),
-            'files' => Finder::create()->in("{$this->rootDirectory}/{$directoryPath}")->ignoreDotFiles(false)->depth(0)->files()->getIterator(),
+            'directories' => Finder::create()->in("{$this->rootDirectory}/{$directoryPath}")->ignoreDotFiles(false)->depth(0)->directories()->sortByName()->getIterator(),
+            'files' => Finder::create()->in("{$this->rootDirectory}/{$directoryPath}")->ignoreDotFiles(false)->depth(0)->files()->sortByName()->getIterator(),
         ];
     }
 

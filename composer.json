@@ -1,6 +1,6 @@
 {
   "name": "jandc/simple-filemanager",
-  "description": "",
+  "description": "Simple web based file manager. Build with PHP and JavaScript.",
   "license": "ISC",
   "require": {
     "php": "~7.0",

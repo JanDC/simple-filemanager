@@ -157,6 +157,8 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      */
     public function getPathRelativeToRoot($path)
     {
-        return ltrim(str_replace($this->rootDirectory, '', $path), DIRECTORY_SEPARATOR);
+        $rootDir = realpath($this->rootDirectory);
+
+        return ltrim(str_replace($rootDir, '', $path), DIRECTORY_SEPARATOR);
     }
 }

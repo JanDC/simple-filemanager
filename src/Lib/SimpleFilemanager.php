@@ -5,7 +5,6 @@ namespace SimpleFilemanager\Lib;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\Iterator\SortableIterator;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -19,13 +18,13 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      */
     public function __construct(string $rootDirectory)
     {
-        $this->rootDirectory = $rootDirectory;
+        $this->rootDirectory = realpath($rootDirectory);
     }
 
     /**
      * @return array[Iterator,Iterator]
      */
-    public function listRoot()
+    public function listRoot(): array
     {
         return [
             'directories' => Finder::create()->in($this->rootDirectory)->ignoreDotFiles(false)->depth(0)->directories()->sortByName()->getIterator(),
@@ -42,7 +41,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
 
         $paths = [['path' => '', 'name' => '/']];
         foreach ($tokens as $key => $token) {
-            $paths[] = ['path' => $paths[$key]['path'] . $token . DIRECTORY_SEPARATOR, 'name' => $token];
+            $paths[] = ['path' => $paths[$key]['path'].$token.DIRECTORY_SEPARATOR, 'name' => $token];
         }
 
         return $paths;
@@ -53,7 +52,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return array[Iterator,Iterator]
      */
-    public function listDirectoryEntries($directoryPath)
+    public function listDirectoryEntries($directoryPath): array
     {
         return [
             'directories' => Finder::create()->in("{$this->rootDirectory}/{$directoryPath}")->ignoreDotFiles(false)->depth(0)->directories()->sortByName()->getIterator(),
@@ -63,11 +62,11 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
 
     /**
      * @param string $path
-     * @param bool $allowDirectories
+     * @param bool   $allowDirectories
      *
      * @return SplFileInfo
      */
-    public function open(string $path, $allowDirectories = false)
+    public function open(string $path, $allowDirectories = false): SplFileInfo
     {
         if (!$this->exists($path)) {
             throw new FileNotFoundException("'{$path}' does not exist.");
@@ -78,8 +77,8 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
         }
 
         $filename = substr($path, strrpos($path, DIRECTORY_SEPARATOR, -1));
-        $fileinfo = new SplFileInfo($path, '', $filename);
-        return $fileinfo;
+
+        return new SplFileInfo($path, '', $filename);
     }
 
     /**
@@ -96,7 +95,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return bool
      */
-    public function isFile(string $path)
+    public function isFile(string $path): bool
     {
         return !(is_link($path) || is_dir($path)) && is_file($path);
     }
@@ -111,27 +110,27 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return string
      */
-    public function buildFullPath($path)
+    public function buildFullPath($path): string
     {
-        return $this->rootDirectory . DIRECTORY_SEPARATOR . $path;
+        return $this->rootDirectory.DIRECTORY_SEPARATOR.$path;
     }
 
     /**
      * @param UploadedFile $file
      *
-     * @param string|null $directory
+     * @param string|null  $directory
      *
      * @return string The resulting path
      */
-    public function copyToDirectory(UploadedFile $file, $directory = null)
+    public function copyToDirectory(UploadedFile $file, $directory = null): string
     {
         $fullDirectory = $this->buildFullPath($directory);
         if (!$this->exists($fullDirectory)) {
             $this->mkdir($fullDirectory);
         }
-        $this->copy($file->getRealPath(), $fullDirectory . DIRECTORY_SEPARATOR . $file->getClientOriginalName());
+        $this->copy($file->getRealPath(), $fullDirectory.DIRECTORY_SEPARATOR.$file->getClientOriginalName());
 
-        return $directory . DIRECTORY_SEPARATOR . $file->getClientOriginalName();
+        return $directory.DIRECTORY_SEPARATOR.$file->getClientOriginalName();
     }
 
     /**
@@ -139,7 +138,7 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return string
      */
-    public function getParentDirectory($path)
+    public function getParentDirectory($path): string
     {
         try {
             $directory = $this->open($this->exists($path) ? $path : $this->buildFullPath($path), true)->getPath();
@@ -155,10 +154,8 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return string
      */
-    public function getPathRelativeToRoot($path)
+    public function getPathRelativeToRoot($path): string
     {
-        $rootDir = realpath($this->rootDirectory);
-
-        return ltrim(str_replace($rootDir, '', $path), DIRECTORY_SEPARATOR);
+        return ltrim(str_replace($this->rootDirectory, '', $path), DIRECTORY_SEPARATOR);
     }
 }

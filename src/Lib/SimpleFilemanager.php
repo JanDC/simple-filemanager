@@ -35,17 +35,17 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
 
     /**
      * @param string $search
-     * @param array  $extensions
-     *
-     * @return mixed
+     * @param array $extensions
+     * @param array $excludeDirs
+     * @return Finder
      */
-    public function search(string $search, array $extensions = [])
+    public function search(string $search, array $extensions = [], array $excludeDirs = [])
     {
         $search = preg_replace('/[^a-zA-Z0-9\-_\.]/', '', $search);
         $searchRegex = str_replace(['-', '.'], ['\-', '\.'], $search);
         $extensionsRegex = implode('|', $extensions);
 
-        return Finder::create()->files()->in($this->rootDirectory)->name('/('.$searchRegex.').*'.($extensions ? '\.('.$extensionsRegex.')' : '').'$/i')->sortByName();
+        return Finder::create()->files()->in($this->rootDirectory)->exclude($excludeDirs)->name('/('.$searchRegex.').*'.($extensions ? '\.('.$extensionsRegex.')' : '').'$/i')->sortByName();
     }
 
     public function createDirectoryPath($path)

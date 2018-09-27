@@ -33,6 +33,21 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
 
     }
 
+    /**
+     * @param string $search
+     * @param array  $extensions
+     *
+     * @return mixed
+     */
+    public function search(string $search, array $extensions = [])
+    {
+        $search = preg_replace('/[^a-zA-Z0-9\-_\.]/', '', $search);
+        $searchRegex = str_replace(['-', '.'], ['\-', '\.'], $search);
+        $extensionsRegex = implode('|', $extensions);
+
+        return Finder::create()->files()->in($this->rootDirectory)->name('/('.$searchRegex.').*'.($extensions ? '\.('.$extensionsRegex.')' : '').'$/i')->sortByName();
+    }
+
     public function createDirectoryPath($path)
     {
         $relativePath = $this->getPathRelativeToRoot($path);
@@ -128,9 +143,9 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
         if (!$this->exists($fullDirectory)) {
             $this->mkdir($fullDirectory);
         }
-        $filename = $this->generateTargetFile($fullDirectory,pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),$file->getClientOriginalExtension());
+        $filename = $this->generateTargetFile($fullDirectory, pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), $file->getClientOriginalExtension());
 
-        $targetFile = $fullDirectory.DIRECTORY_SEPARATOR.$filename. '.' . $file->getClientOriginalExtension();
+        $targetFile = $fullDirectory.DIRECTORY_SEPARATOR.$filename.'.'.$file->getClientOriginalExtension();
 
         $this->copy($file->getRealPath(), $targetFile);
 
@@ -144,20 +159,21 @@ class SimpleFilemanager extends Filesystem implements FilemanagerInterface
      *
      * @return string
      */
-    public function generateTargetFile($targetDirectory, $targetFilename , $originalExtension)
+    public function generateTargetFile($targetDirectory, $targetFilename, $originalExtension)
     {
-        $targetFile = $targetDirectory.DIRECTORY_SEPARATOR.$targetFilename. '.' . $originalExtension;
-        if($this->exists($targetFile)){
+        $targetFile = $targetDirectory.DIRECTORY_SEPARATOR.$targetFilename.'.'.$originalExtension;
+        if ($this->exists($targetFile)) {
             $targetFilename .= '-copy';
-            $targetFile = $targetDirectory.DIRECTORY_SEPARATOR.$targetFilename . '.' . $originalExtension;
+            $targetFile = $targetDirectory.DIRECTORY_SEPARATOR.$targetFilename.'.'.$originalExtension;
 
-            if($this->exists($targetFile)){
+            if ($this->exists($targetFile)) {
                 return $this->generateTargetFile($targetDirectory, $targetFilename, $originalExtension);
             }
         }
 
         return $targetFilename;
     }
+
     /**
      * @param string $path
      *
